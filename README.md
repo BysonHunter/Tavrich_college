@@ -110,18 +110,6 @@
 
 Темы лекции: основные понятия и структура МПС, параметры и характеристики, история развития, архитектуры фон Неймана и Гарвардская, классификация и шинная организация.
 
-Папка `images/` содержит 8 схем:
-
-```text
-01_структура_мпс_блоки.png
-02_структура_мпс_шины.png
-03_схема_микропроцессорной_системы.png
-04_архитектура_фон_неймана.png
-05_архитектура_с_общей_шиной.png
-06_гарвардская_архитектура.png
-07_архитектура_с_раздельными_шинами.png
-08_шинная_структура_мпс.png
-```
 
 ### Лекция 2. Микропроцессор
 
@@ -131,41 +119,6 @@
 
 В лекции рассматриваются понятие и назначение микропроцессора, классификация, параметры и быстродействие, внутренняя структура и функции, память, подсистема ввода-вывода, логическая структура и история развития микропроцессоров Intel.
 
-Папка `images/` содержит графические ресурсы исходной презентации:
-
-```text
-slide_11_img_01.png
-slide_12_img_01.png
-slide_17_img_01.png
-slide_18_img_01.jpg
-slide_18_img_02.png
-slide_19_img_01.png
-slide_19_img_02.jpg
-slide_21_img_01.jpg
-slide_22_img_01.png
-slide_22_img_02.jpg
-slide_23_img_01.png
-slide_23_img_02.jpg
-slide_24_img_01.png
-slide_24_img_02.jpg
-slide_25_img_01.jpg
-slide_25_img_02.jpg
-slide_25_img_03.jpg
-slide_26_img_01.jpg
-slide_26_img_02.jpg
-slide_27_img_01.png
-slide_27_img_02.jpg
-slide_28_img_01.jpg
-slide_28_img_02.jpg
-slide_28_img_03.jpg
-slide_29_img_01.png
-slide_29_img_02.jpg
-slide_30_img_01.jpg
-slide_31_img_01.png
-slide_31_img_02.jpg
-slide_31_img_03.jpg
-slide_32_img_01.jpg
-```
 
 ## 2.2. `МПС/4 курс`
 
@@ -182,40 +135,6 @@ slide_32_img_01.jpg
 
 Тема: постановка технического задания, анализ объекта управления, входные и выходные сигналы, требования к GPIO, памяти, таймерам и интерфейсам, I/O Map, согласование сигналов, временные требования и типовые ошибки проектирования.
 
-Папка `images/` содержит 30 схем и иллюстраций:
-
-```text
-analog_4_20ma.png
-control_loop.png
-debounce.png
-error_cost.png
-from_idea_to_device.png
-galvanic_isolation.png
-gpio_calculation.png
-if_then_requirement.png
-input_channel.png
-input_signal_types.png
-io_map.png
-io_to_ports.png
-lecture_route.png
-lecture_summary.png
-memory_and_speed.png
-mps_control_center.png
-object_info.png
-output_channel.png
-output_signal_types.png
-practice_9.png
-relay_driver.png
-signal_types.png
-signals_to_resources.png
-smart_traffic_light.png
-technical_assignment.png
-time_budget.png
-top_down.png
-topic_dependencies.png
-typical_errors.png
-tz_structure.png
-```
 
 ---
 
@@ -240,40 +159,6 @@ tz_structure.png
 
 Также находится [`images_manifest.txt`](./ПМК/3%20курс/Лекция_1_Основы_архитектуры_микроконтроллеров/images_manifest.txt) — манифест графических ресурсов.
 
-Папка `images/` содержит:
-
-```text
-history_timeline_original.png
-slide_07_image_01.png
-slide_11_image_01.jpg
-slide_12_image_01.jpg
-slide_12_image_02.jpg
-slide_12_image_03.jpg
-slide_12_image_04.jpg
-slide_12_image_05.jpg
-slide_12_image_06.jpg
-slide_13_image_01.jpg
-slide_13_image_02.jpg
-slide_13_image_03.jpg
-slide_13_image_04.jpg
-slide_13_image_05.jpg
-slide_13_image_06.jpg
-slide_14_image_01.jpg
-slide_20_image_01.jpg
-slide_23_image_01.jpg
-slide_23_image_02.jpg
-slide_23_image_03.jpg
-slide_25_image_01.jpg
-slide_26_image_01.png
-slide_26_image_02.png
-slide_27_image_01.png
-slide_27_image_02.png
-slide_28_image_01.png
-slide_29_image_01.jpg
-slide_30_image_01.jpg
-slide_31_image_01.jpg
-slide_32_image_01.jpg
-```
 
 ## 3.2. `ПМК/4 курс`
 
@@ -290,40 +175,6 @@ slide_32_image_01.jpg
 
 Материал сравнивает AVR, ARM Cortex-M, STM32 и ESP32 по назначению, архитектуре, производительности, памяти, периферии, энергопотреблению, средствам отладки, беспроводной связи и критериям инженерного выбора.
 
-Папка `images/` содержит 30 иллюстраций:
-
-```text
-slide_01.png
-slide_02.png
-slide_03.png
-slide_04.png
-slide_05.png
-slide_06.png
-slide_07.png
-slide_08.png
-slide_09.png
-slide_10.png
-slide_11.png
-slide_12.png
-slide_13.png
-slide_14.png
-slide_15.png
-slide_16.png
-slide_17.png
-slide_18.png
-slide_19.png
-slide_20.png
-slide_21.png
-slide_22.png
-slide_23.png
-slide_24.png
-slide_25.png
-slide_26.png
-slide_27.png
-slide_28.png
-slide_29.png
-slide_30.png
-```
 
 ---
 
@@ -353,17 +204,14 @@ Tavrich_college/
 │   │   ├── readme.md
 │   │   ├── Лекция_1_Общие_понятия_МПС/
 │   │   │   ├── Лекция_1_Общие_понятия_МПС.md
-│   │   │   └── images/
 │   │   └── Лекция_2_Микропроцессор/
 │   │       ├── МП_Лекция_2_Микропроцессор.md
-│   │       └── images/
 │   └── 4 курс/
 │       ├── readme.md
 │       └── Лекции/
 │           ├── readme.md
 │           └── lecture_01_mps/
 │               ├── lecture_01_etapy_proektirovaniya_mps.md
-│               └── images/
 │
 └── ПМК/
     ├── readme.md
@@ -372,14 +220,12 @@ Tavrich_college/
     │   └── Лекция_1_Основы_архитектуры_микроконтроллеров/
     │       ├── Лекция_1_Основы_архитектуры_микроконтроллеров.md
     │       ├── images_manifest.txt
-    │       └── images/
     └── 4 курс/
         ├── readme.md
         └── Лекции/
             ├── readme.md
             └── Лекция_5_1_AVR_CortexM_STM32_ESP32_MD/
                 ├── Лекция_5_1_AVR_ARM_Cortex-M_STM32_ESP32.md
-                └── images/
 ```
 
 ---
@@ -393,7 +239,6 @@ Tavrich_college/
 | **Входной контроль** | Проверяет исходный уровень знаний перед началом изучения МДК. |
 | **Вопросы к аккредитации** | Используются для подготовки к контрольным и аккредитационным мероприятиям. |
 | **Лекции** | Содержат основной теоретический материал. |
-| **`images/`** | Содержат схемы, рисунки, диаграммы и изображения слайдов, используемые в лекциях. |
 | **Локальные `readme.md`** | Служат для навигации по отдельным разделам. |
 | **`images_manifest.txt`** | Содержит перечень графических ресурсов конкретной лекции. |
 
