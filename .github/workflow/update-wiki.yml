@@ -1,0 +1,85 @@
+name: Update GitHub Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "МПС/**"
+      - "ПМК/**"
+      - "РПД/**"
+      - "ФОС/**"
+      - "АккМон/**"
+      - ".github/scripts/build_wiki.py"
+      - ".github/workflows/update-wiki.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-wiki-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  update-wiki:
+    name: Build and publish Wiki
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Clone Wiki repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          WIKI_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+
+          if ! git clone "${WIKI_URL}" wiki; then
+            echo "::error::GitHub Wiki is not initialized."
+            echo "::error::Enable Wikis in Settings -> General -> Features and create the first Home page once."
+            exit 1
+          fi
+
+      - name: Build Wiki from repository
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python .github/scripts/build_wiki.py \
+            --source "${GITHUB_WORKSPACE}" \
+            --wiki "${GITHUB_WORKSPACE}/wiki" \
+            --owner "${GITHUB_REPOSITORY_OWNER}" \
+            --repo "${GITHUB_REPOSITORY#*/}" \
+            --branch "${GITHUB_REF_NAME}"
+
+      - name: Commit and publish Wiki
+        shell: bash
+        working-directory: wiki
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Wiki is already up to date."
+            exit 0
+          fi
+
+          git commit -m "docs: sync Wiki from ${GITHUB_SHA::7}"
+          git push
