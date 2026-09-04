@@ -1,0 +1,60 @@
+name: Update README
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "АккМон/**"
+      - "РПД/**"
+      - "ФОС/**"
+      - "МПС/**"
+      - "ПМК/**"
+      - ".github/scripts/build_readme.py"
+      - ".github/workflows/update-readme.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-readme-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  update-readme:
+    name: Generate root README
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate README.md
+        run: |
+          python .github/scripts/build_readme.py \
+            --repo "${GITHUB_WORKSPACE}" \
+            --output "README.md"
+
+      - name: Commit README.md if changed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git diff --quiet -- README.md; then
+            echo "README.md is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add README.md
+          git commit -m "docs: automatically update README [skip ci]"
+          git push
