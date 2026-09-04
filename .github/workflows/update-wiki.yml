@@ -4,14 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "МПС/**"
-      - "ПМК/**"
-      - "РПД/**"
-      - "ФОС/**"
-      - "АккМон/**"
-      - ".github/scripts/build_wiki.py"
-      - ".github/workflows/update-wiki.yml"
+    paths-ignore:
+      - "README.md"
+      - "**/images/**"
   workflow_dispatch:
 
 permissions:
@@ -25,7 +20,6 @@ jobs:
   update-wiki:
     name: Build and publish Wiki
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout main repository
         uses: actions/checkout@v4
@@ -44,20 +38,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           WIKI_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
 
           if ! git clone "${WIKI_URL}" wiki; then
             echo "::error::GitHub Wiki is not initialized."
-            echo "::error::Enable Wikis in Settings -> General -> Features and create the first Home page once."
+            echo "::error::Enable Wikis and create the first Home page once."
             exit 1
           fi
 
-      - name: Build Wiki from repository
+      - name: Build Wiki dynamically
         shell: bash
         run: |
           set -euo pipefail
-
           python .github/scripts/build_wiki.py \
             --source "${GITHUB_WORKSPACE}" \
             --wiki "${GITHUB_WORKSPACE}/wiki" \
@@ -81,5 +73,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "docs: sync Wiki from ${GITHUB_SHA::7}"
+          git commit -m "docs: dynamically sync Wiki from ${GITHUB_SHA::7}"
           git push

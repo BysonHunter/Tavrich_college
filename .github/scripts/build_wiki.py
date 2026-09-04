@@ -7,228 +7,63 @@ import argparse
 import os
 import re
 import shutil
-from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 
-ROOTS = ("МПС", "ПМК", "РПД", "ФОС", "АккМон")
-SUBJECTS = ("МПС", "ПМК")
+from repo_catalog import (
+    Item, children, dir_page_id, directory_readme, discover,
+    markdown_page_id, md_escape, read_markdown, repo_blob_url,
+    repo_raw_url, repo_tree_url, top_level_dirs, top_level_files,
+)
 
-# Человекочитаемые названия документов, у которых первый H1 внутри файла
-# является не названием документа, а названием первого раздела.
-TITLE_OVERRIDES = {
-    "РПД/РП_МДК0201_МПС_КСК_2025.md":
-        "МДК.02.01 «Микропроцессорные системы» — 3 курс",
-    "РПД/РП_МДК0201_Микропроцессорные_системы_4_курс_КСК_2025.md":
-        "МДК.02.01 «Микропроцессорные системы» — 4 курс",
-    "РПД/РП_МДК0202_Программирование_микроконтроллеров_КСК_2025.md":
-        "МДК.02.02 «Программирование микроконтроллеров» — 3 курс",
-    "РПД/РП_МДК0202_Программирование_микроконтроллеров_4_курс_КСК_2025.md":
-        "МДК.02.02 «Программирование микроконтроллеров» — 4 курс",
+def md_link(label: str, page_id: str) -> str:
+    return f"[{md_escape(label)}]({page_id})"
 
-    "ФОС/Входной_контроль_МПС_и_программирование_МК_3_курс.md":
-        "Входной контроль по МПС и программированию микроконтроллеров — 3 курс",
-
-    "АккМон/Вопросы_к_аккредитации_Микропроцессорные_системы.md":
-        "Вопросы к аккредитации — микропроцессорные системы",
-    "АккМон/Вопросы_к_аккредитации_Программирование_микроконтроллеров_11-09-2026.md":
-        "Вопросы к аккредитации — программирование микроконтроллеров",
-    "АккМон/ФОС_Микропроцессорные_системы_09.02.01.md":
-        "ФОС — микропроцессорные системы, 3 курс",
-    "АккМон/ФОС_Микропроцессорные_системы_4_курс_09.02.01.md":
-        "ФОС — микропроцессорные системы, 4 курс",
-    "АккМон/ФОС_Программирование_микроконтроллеров_09.02.01.md":
-        "ФОС — программирование микроконтроллеров, 3 курс",
-    "АккМон/ФОС_Программирование_микроконтроллеров_4_курс_09.02.01.md":
-        "ФОС — программирование микроконтроллеров, 4 курс",
-}
-
-
-@dataclass
-class Page:
-    source_path: str
-    page_file: str
-    page_id: str
-    title: str
-    root: str
-    course: str | None
-    category: str | None
-
-
-def natural_key(text: str):
-    return [int(x) if x.isdigit() else x.casefold()
-            for x in re.split(r"(\d+)", text)]
-
-
-def sanitize(text: str) -> str:
-    text = text.strip().replace("_", "-").replace(" ", "-")
-    text = re.sub(r'[\\/:*?"<>|#]+', "-", text)
-    text = re.sub(r"-{2,}", "-", text)
-    return text.strip("-.")
-
-
-def enc(path: str) -> str:
-    return "/".join(quote(p, safe="-_.~") for p in PurePosixPath(path).parts)
-
-
-def raw_url(owner: str, repo: str, branch: str, path: str) -> str:
-    return f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{enc(path)}"
-
-
-def blob_url(owner: str, repo: str, branch: str, path: str) -> str:
-    return f"https://github.com/{owner}/{repo}/blob/{branch}/{enc(path)}"
-
-
-def extract_title(text: str, fallback: str) -> str:
-    for line in text.splitlines():
-        m = re.match(r"^\s*#\s+(.+?)\s*$", line)
-        if m:
-            value = re.sub(r"[*_`]+", "", m.group(1)).strip()
-            if value:
-                return value
-    return fallback
-
-
-def detect_course_and_index(parts: tuple[str, ...]) -> tuple[str | None, int | None]:
-    for idx, part in enumerate(parts):
-        m = re.fullmatch(r"(\d+)\s*курс", part, re.I)
-        if m:
-            return f"{int(m.group(1))} курс", idx
-    return None, None
-
-
-def detect_category(parts: tuple[str, ...], course_idx: int | None) -> str | None:
-    if course_idx is None:
-        return None
-    # category exists only when there is a directory between course and file
-    if course_idx + 1 >= len(parts) - 1:
-        return "Материалы"
-    return parts[course_idx + 1]
-
-
-def make_page_file(rel: str, used: set[str]) -> str:
-    p = PurePosixPath(rel)
-    parts = p.parts
-    root = parts[0]
-    course, course_idx = detect_course_and_index(parts)
-    category = detect_category(parts, course_idx)
-
-    bits = [sanitize(root)]
-    if course:
-        bits.append(course.split()[0])
-    if category and category not in ("Лекции", "Материалы"):
-        bits.append(sanitize(category))
-    bits.append(sanitize(p.stem))
-
-    base = "-".join(x for x in bits if x)
-    candidate = base + ".md"
-    n = 2
-    while candidate in used:
-        candidate = f"{base}-{n}.md"
-        n += 1
-    used.add(candidate)
-    return candidate
-
-
-def discover(source: Path) -> list[Page]:
-    records = []
-
-    for root in ROOTS:
-        folder = source / root
-        if not folder.exists():
+def clean_wiki(wiki_dir: Path) -> None:
+    wiki_dir.mkdir(parents=True, exist_ok=True)
+    for item in wiki_dir.iterdir():
+        if item.name == ".git":
             continue
+        if item.is_dir():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
 
-        for p in folder.rglob("*.md"):
-            # README каталогов используется в основном репозитории,
-            # но не дублируется как отдельная Wiki-страница.
-            if p.name.casefold() == "readme.md":
-                continue
+def write(path: Path, text: str) -> None:
+    path.write_text(text.rstrip() + "\n", encoding="utf-8")
 
-            rel = p.relative_to(source).as_posix()
-            text = p.read_text(encoding="utf-8")
-            parts = PurePosixPath(rel).parts
-            course, course_idx = detect_course_and_index(parts)
-            category = detect_category(parts, course_idx) if root in SUBJECTS else None
-            title = TITLE_OVERRIDES.get(rel, extract_title(text, p.stem))
-            records.append((rel, title, root, course, category))
-
-    used: set[str] = set()
-    pages: list[Page] = []
-
-    for rel, title, root, course, category in sorted(
-        records, key=lambda r: natural_key(r[0])
-    ):
-        pf = make_page_file(rel, used)
-        pages.append(
-            Page(
-                source_path=rel,
-                page_file=pf,
-                page_id=Path(pf).stem,
-                title=title,
-                root=root,
-                course=course,
-                category=category,
-            )
-        )
-
-    return pages
-
-
-def resolve_relative(source_path: str, target: str) -> str | None:
+def resolve_relative(source_rel: str, target: str) -> str | None:
     target = target.strip()
-
     if not target or target.startswith(
         ("#", "http://", "https://", "mailto:", "data:", "//")
     ):
         return None
-
     if target.startswith("<") and target.endswith(">"):
         target = target[1:-1]
-
     target = unquote(target.split("#", 1)[0])
-    base = PurePosixPath(source_path).parent
+    base = PurePosixPath(source_rel).parent
     return os.path.normpath((base / target).as_posix()).replace("\\", "/")
 
-
-def rewrite(
-    text: str,
-    page: Page,
-    by_source: dict[str, Page],
-    owner: str,
-    repo: str,
-    branch: str,
-) -> str:
-    # Markdown images
-    img_re = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
-
-    def img_sub(m):
-        resolved = resolve_relative(page.source_path, m.group(2))
+def rewrite_markdown(text, source_rel, markdown_map, owner, repo, branch):
+    image_re = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
+    def image_sub(m):
+        resolved = resolve_relative(source_rel, m.group(2))
         if resolved is None:
             return m.group(0)
-        return f"![{m.group(1)}]({raw_url(owner, repo, branch, resolved)})"
+        return f"![{m.group(1)}]({repo_raw_url(owner, repo, branch, resolved)})"
+    text = image_re.sub(image_sub, text)
 
-    text = img_re.sub(img_sub, text)
-
-    # HTML images
-    html_img_re = re.compile(
-        r'(<img\b[^>]*?\bsrc=["\'])([^"\']+)(["\'])',
-        re.I,
-    )
-
+    html_re = re.compile(r'(<img\b[^>]*?\bsrc=["\'])([^"\']+)(["\'])', re.I)
     def html_sub(m):
-        resolved = resolve_relative(page.source_path, m.group(2))
+        resolved = resolve_relative(source_rel, m.group(2))
         if resolved is None:
             return m.group(0)
-        return m.group(1) + raw_url(owner, repo, branch, resolved) + m.group(3)
+        return m.group(1) + repo_raw_url(owner, repo, branch, resolved) + m.group(3)
+    text = html_re.sub(html_sub, text)
 
-    text = html_img_re.sub(html_sub, text)
-
-    # Relative Markdown links between source documents
     link_re = re.compile(r"(?<!!)\[([^\]]+)\]\(([^)]+)\)")
-
     def link_sub(m):
         label, target = m.group(1), m.group(2).strip()
-
         if target.startswith(("#", "http://", "https://", "mailto:", "//")):
             return m.group(0)
 
@@ -238,387 +73,185 @@ def rewrite(
         else:
             target_path, anchor = target, ""
 
-        resolved = resolve_relative(page.source_path, target_path)
+        resolved = resolve_relative(source_rel, target_path)
         if resolved is None:
             return m.group(0)
 
-        other = by_source.get(resolved)
-        if other:
-            return md_link(label, other.page_id + anchor)
+        if resolved in markdown_map:
+            return md_link(label, markdown_map[resolved] + anchor)
 
-        return f"[{label}]({blob_url(owner, repo, branch, resolved)}{anchor})"
+        return f"[{label}]({repo_blob_url(owner, repo, branch, resolved)}{anchor})"
 
     return link_re.sub(link_sub, text)
 
+def directory_intro(directory: Item, source_root: Path, markdown_map,
+                    owner, repo, branch) -> str | None:
+    readme = directory_readme(directory.abs_path)
+    if not readme:
+        return None
+    text = read_markdown(readme)
+    if not text:
+        return None
 
-def write(path: Path, text: str):
-    path.write_text(text.rstrip() + "\n", encoding="utf-8")
+    rel = readme.relative_to(source_root).as_posix()
+    text = rewrite_markdown(text, rel, markdown_map, owner, repo, branch)
+    text = re.sub(r"^\s*#\s+.+?\n+", "", text, count=1, flags=re.MULTILINE).strip()
+    return text or None
 
+def build_dir_page(directory: Item, source_root: Path, items, markdown_map,
+                   owner, repo, branch) -> str:
+    parent_id = "Home" if not directory.parent_rel else dir_page_id(directory.parent_rel)
+    lines = [
+        f"# {directory.title}", "",
+        f"[🏠 Главная](Home) · {md_link('← Назад', parent_id)}", "",
+        f"> **Папка в основном репозитории:** "
+        f"[{directory.rel}]({repo_tree_url(owner, repo, branch, directory.rel)})", "",
+    ]
 
-def md_link(label: str, page_id: str) -> str:
-    """
-    Standard Markdown link for GitHub Wiki.
+    intro = directory_intro(
+        directory, source_root, markdown_map, owner, repo, branch
+    )
+    if intro:
+        lines += ["## Описание раздела", "", intro, ""]
 
-    Do NOT use [[label|page]] inside Markdown tables:
-    the pipe character is parsed as a table-cell separator by GitHub.
-    """
-    return f"[{label}]({page_id})"
+    kids = children(items, directory.rel)
+    subdirs = [x for x in kids if x.kind == "dir"]
+    markdowns = [x for x in kids if x.kind == "markdown"]
+    files = [x for x in kids if x.kind == "file"]
 
+    if subdirs:
+        lines += ["## Подразделы", ""]
+        for x in subdirs:
+            lines.append(f"- {md_link(x.title, dir_page_id(x.rel))}")
+        lines.append("")
 
-def table_escape(text: str) -> str:
+    if markdowns:
+        lines += ["## Материалы", ""]
+        for x in markdowns:
+            lines.append(f"- {md_link(x.title, markdown_map[x.rel])}")
+        lines.append("")
+
+    if files:
+        lines += ["## Файлы", ""]
+        for x in files:
+            lines.append(
+                f"- [{md_escape(x.title)}]({repo_blob_url(owner, repo, branch, x.rel)})"
+            )
+        lines.append("")
+
+    if not kids:
+        lines += ["_Нет опубликованных материалов._", ""]
+
+    return "\n".join(lines)
+
+def build_markdown_page(item: Item, markdown_map, owner, repo, branch) -> str:
+    text = read_markdown(item.abs_path) or ""
+    text = rewrite_markdown(text, item.rel, markdown_map, owner, repo, branch)
+    parent_id = dir_page_id(item.parent_rel) if item.parent_rel else "Home"
+
     return (
-        str(text)
-        .replace("\\", "\\\\")
-        .replace("|", "\\|")
-        .replace("\r\n", "<br>")
-        .replace("\n", "<br>")
+        f"[🏠 Главная](Home) · {md_link('← К разделу', parent_id)}\n\n"
+        f"> **Источник:** [{item.rel}]"
+        f"({repo_blob_url(owner, repo, branch, item.rel)})  \n"
+        f"> Автосинхронизация из ветки `{branch}`.\n\n"
+        "---\n\n" + text.lstrip()
     )
 
-
-def clean_wiki(wiki_dir: Path):
-    wiki_dir.mkdir(parents=True, exist_ok=True)
-
-    for item in wiki_dir.iterdir():
-        if item.name == ".git":
-            continue
-        if item.is_dir():
-            shutil.rmtree(item)
-        else:
-            item.unlink()
-
-
-def pages_for(
-    pages: list[Page],
-    root=None,
-    course=None,
-    category=None,
-) -> list[Page]:
-    out = pages
-
-    if root is not None:
-        out = [p for p in out if p.root == root]
-    if course is not None:
-        out = [p for p in out if p.course == course]
-    if category is not None:
-        out = [p for p in out if p.category == category]
-
-    return out
-
-
-def category_id(root: str, course: str, category: str) -> str:
-    return f"{root}-{course.split()[0]}-{sanitize(category)}"
-
-
-def category_sort(category: str):
-    if category == "Лекции":
-        return (0, natural_key(category))
-    if "Практи" in category:
-        return (1, natural_key(category))
-    return (2, natural_key(category))
-
-
-def build_home(wiki_dir: Path):
-    write(
-        wiki_dir / "Home.md",
-        """# Учебно-методические материалы Таврического колледжа
-
-Материалы для специальности **09.02.01 «Компьютерные системы и комплексы»**.
-
-## Дисциплины
-
-- [МДК.02.01 «Микропроцессорные системы»](МПС)
-- [МДК.02.02 «Программирование микроконтроллеров»](ПМК)
-
-## Документация
-
-- [Рабочие программы](РПД)
-- [Оценочные материалы](ФОС)
-- [Аккредитационный мониторинг](АккМон)
-
-> Wiki формируется автоматически из основной ветки `main`.
-""",
-    )
-
-
-def build_subject(
-    wiki_dir: Path,
-    pages: list[Page],
-    root: str,
-    full_name: str,
-):
-    subject_pages = pages_for(pages, root=root)
-    courses = sorted(
-        {p.course for p in subject_pages if p.course},
-        key=natural_key,
-    )
-
-    lines = [f"# {full_name}", "", "## Курсы", ""]
-
-    for course in courses:
-        course_page_id = f"{root}-{course.split()[0]}-курс"
-        lines.append(f"- {md_link(course, course_page_id)}")
-
-    lines += ["", "[🏠 На главную](Home)"]
-    write(wiki_dir / f"{root}.md", "\n".join(lines))
-
-    for course in courses:
-        course_pages = pages_for(pages, root=root, course=course)
-        categories = sorted(
-            {p.category or "Материалы" for p in course_pages},
-            key=category_sort,
-        )
-
-        course_page_id = f"{root}-{course.split()[0]}-курс"
-        course_lines = [f"# {full_name} — {course}", ""]
-
-        for category in categories:
-            items = pages_for(
-                pages,
-                root=root,
-                course=course,
-                category=category,
-            )
-            if not items:
-                continue
-
-            cid = category_id(root, course, category)
-
-            course_lines += [
-                f"## {category}",
-                "",
-                md_link("Открыть раздел", cid),
-                "",
-            ]
-
-            for p in items:
-                course_lines.append(f"- {md_link(p.title, p.page_id)}")
-
-            course_lines.append("")
-
-            cat_lines = [
-                f"# {full_name} — {course}",
-                "",
-                f"## {category}",
-                "",
-            ]
-
-            for i, p in enumerate(items, 1):
-                cat_lines.append(f"{i}. {md_link(p.title, p.page_id)}")
-
-            cat_lines += [
-                "",
-                f"{md_link('← ' + course, course_page_id)} · "
-                f"{md_link('← ' + root, root)} · "
-                f"[🏠 Главная](Home)",
-            ]
-
-            write(wiki_dir / f"{cid}.md", "\n".join(cat_lines))
-
-        course_lines += [
-            f"{md_link('← ' + root, root)} · [🏠 Главная](Home)"
-        ]
-
-        write(
-            wiki_dir / f"{course_page_id}.md",
-            "\n".join(course_lines),
-        )
-
-
-def build_docs(
-    wiki_dir: Path,
-    pages: list[Page],
-    root: str,
-    title: str,
-):
+def build_home(items, owner, repo, branch) -> str:
     lines = [
-        f"# {title}",
-        "",
-        "| Материал | Исходный файл |",
-        "|---|---|",
+        "# Учебно-методические материалы Таврического колледжа", "",
+        "Wiki формируется автоматически по фактической структуре основного репозитория.", "",
+        "## Разделы", "",
     ]
+    for root in top_level_dirs(items):
+        lines.append(f"- {md_link(root.title, dir_page_id(root.rel))}")
 
-    for p in pages_for(pages, root=root):
-        # ВАЖНО: внутри таблицы используются обычные Markdown-ссылки.
-        # [[label|page]] здесь нельзя использовать, т.к. | разбивает строку таблицы.
-        label = table_escape(p.title)
-        source = table_escape(p.source_path)
-        lines.append(
-            f"| {md_link(label, p.page_id)} | `{source}` |"
-        )
-
-    lines += ["", "[🏠 На главную](Home)"]
-    write(wiki_dir / f"{root}.md", "\n".join(lines))
-
-
-def build_sidebar(wiki_dir: Path, pages: list[Page]):
-    lines = [
-        "## 🏠 Главная",
-        "[Главная](Home)",
-        "",
-        "---",
-        "",
-    ]
-
-    for root, label in (
-        ("МПС", "🖥 МПС"),
-        ("ПМК", "🔧 ПМК"),
-    ):
-        lines += [
-            f"## {label}",
-            md_link(f"Обзор {root}", root),
-            "",
-        ]
-
-        courses = sorted(
-            {p.course for p in pages if p.root == root and p.course},
-            key=natural_key,
-        )
-
-        for course in courses:
-            course_page_id = f"{root}-{course.split()[0]}-курс"
-            lines += [
-                f"**{md_link(course, course_page_id)}**",
-                "",
-            ]
-
-            cats = sorted(
-                {
-                    p.category or "Материалы"
-                    for p in pages_for(
-                        pages,
-                        root=root,
-                        course=course,
-                    )
-                },
-                key=category_sort,
-            )
-
-            for cat in cats:
+    root_files = top_level_files(items)
+    if root_files:
+        lines += ["", "## Файлы в корне", ""]
+        for x in root_files:
+            if x.kind == "markdown":
+                lines.append(f"- {md_link(x.title, markdown_page_id(x.rel))}")
+            else:
                 lines.append(
-                    f"- {md_link(cat, category_id(root, course, cat))}"
+                    f"- [{md_escape(x.title)}]({repo_blob_url(owner, repo, branch, x.rel)})"
                 )
 
-            lines.append("")
-
-        lines += ["---", ""]
-
     lines += [
-        "## 📚 Документация",
-        f"- {md_link('Рабочие программы', 'РПД')}",
-        f"- {md_link('Оценочные материалы', 'ФОС')}",
-        f"- {md_link('Аккредитационный мониторинг', 'АккМон')}",
+        "", "---", "",
+        f"[Основной репозиторий](https://github.com/{owner}/{repo})", "",
+        "> Новые каталоги и материалы автоматически появляются после `git push`; "
+        "удалённые — исчезают.",
     ]
+    return "\n".join(lines)
 
-    write(wiki_dir / "_Sidebar.md", "\n".join(lines))
+def sidebar_branch(directory: Item, items, level: int) -> list[str]:
+    if level > 4:
+        return []
+    indent = "  " * max(level - 1, 0)
+    lines = [f"{indent}- {md_link(directory.title, dir_page_id(directory.rel))}"]
+    for child in [x for x in children(items, directory.rel) if x.kind == "dir"]:
+        lines.extend(sidebar_branch(child, items, level + 1))
+    return lines
 
+def build_sidebar(items, owner, repo) -> str:
+    lines = ["## 🏠 Навигация", "", "[Главная](Home)", "", "---", ""]
+    for root in top_level_dirs(items):
+        lines.extend(sidebar_branch(root, items, 1))
+    lines += [
+        "", "---", "",
+        f"[Основной репозиторий](https://github.com/{owner}/{repo})",
+    ]
+    return "\n".join(lines)
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--source", required=True)
-    ap.add_argument("--wiki", required=True)
-    ap.add_argument("--owner", default="BysonHunter")
-    ap.add_argument("--repo", default="Tavrich_college")
-    ap.add_argument("--branch", default="main")
-    args = ap.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("--source", required=True)
+    p.add_argument("--wiki", required=True)
+    p.add_argument("--owner", default="BysonHunter")
+    p.add_argument("--repo", default="Tavrich_college")
+    p.add_argument("--branch", default="main")
+    args = p.parse_args()
 
     source = Path(args.source).resolve()
     wiki_dir = Path(args.wiki).resolve()
-
-    pages = discover(source)
-    by_source = {p.source_path: p for p in pages}
+    items = discover(source)
+    markdowns = [x for x in items if x.kind == "markdown"]
+    markdown_map = {x.rel: markdown_page_id(x.rel) for x in markdowns}
 
     clean_wiki(wiki_dir)
 
-    for page in pages:
-        src = source / page.source_path
-        text = rewrite(
-            src.read_text(encoding="utf-8"),
-            page,
-            by_source,
-            args.owner,
-            args.repo,
-            args.branch,
-        )
-
-        if (
-            page.root in SUBJECTS
-            and page.course
-            and page.category
-        ):
-            parent = category_id(
-                page.root,
-                page.course,
-                page.category,
-            )
-        else:
-            parent = page.root
-
-        header = (
-            f"[🏠 Главная](Home) · "
-            f"{md_link('← К разделу', parent)}\n\n"
-            f"> **Источник:** "
-            f"[{page.source_path}]"
-            f"({blob_url(args.owner, args.repo, args.branch, page.source_path)})  \n"
-            f"> Страница автоматически синхронизируется "
-            f"с веткой `{args.branch}`.\n\n"
-            "---\n\n"
-        )
-
-        write(
-            wiki_dir / page.page_file,
-            header + text.lstrip(),
-        )
-
-    build_home(wiki_dir)
-
-    build_subject(
-        wiki_dir,
-        pages,
-        "МПС",
-        "МДК.02.01 «Микропроцессорные системы»",
-    )
-    build_subject(
-        wiki_dir,
-        pages,
-        "ПМК",
-        "МДК.02.02 «Программирование микроконтроллеров»",
-    )
-
-    build_docs(
-        wiki_dir,
-        pages,
-        "РПД",
-        "Рабочие программы дисциплин",
-    )
-    build_docs(
-        wiki_dir,
-        pages,
-        "ФОС",
-        "Оценочные материалы",
-    )
-    build_docs(
-        wiki_dir,
-        pages,
-        "АккМон",
-        "Аккредитационный мониторинг",
-    )
-
-    build_sidebar(wiki_dir, pages)
-
+    write(wiki_dir / "Home.md", build_home(items, args.owner, args.repo, args.branch))
+    write(wiki_dir / "_Sidebar.md", build_sidebar(items, args.owner, args.repo))
     write(
         wiki_dir / "_Footer.md",
         "---\n"
         "**09.02.01 «Компьютерные системы и комплексы»** · "
-        "[Основной репозиторий]"
-        "(https://github.com/BysonHunter/Tavrich_college)",
+        f"[Основной репозиторий](https://github.com/{args.owner}/{args.repo}) · "
+        f"автосинхронизация из `{args.branch}`",
     )
 
-    print(f"Сгенерировано страниц материалов: {len(pages)}")
-    for root in ROOTS:
-        print(f"{root}: {len([p for p in pages if p.root == root])}")
+    for directory in [x for x in items if x.kind == "dir"]:
+        write(
+            wiki_dir / f"{dir_page_id(directory.rel)}.md",
+            build_dir_page(
+                directory, source, items, markdown_map,
+                args.owner, args.repo, args.branch,
+            ),
+        )
 
+    for item in markdowns:
+        write(
+            wiki_dir / f"{markdown_map[item.rel]}.md",
+            build_markdown_page(
+                item, markdown_map, args.owner, args.repo, args.branch
+            ),
+        )
+
+    print(f"Wiki каталогов: {len([x for x in items if x.kind == 'dir'])}")
+    print(f"Markdown-страниц: {len(markdowns)}")
+    print(f"Файлов-ссылок: {len([x for x in items if x.kind == 'file'])}")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

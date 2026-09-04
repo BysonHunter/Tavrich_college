@@ -4,14 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "АккМон/**"
-      - "РПД/**"
-      - "ФОС/**"
-      - "МПС/**"
-      - "ПМК/**"
-      - ".github/scripts/build_readme.py"
-      - ".github/workflows/update-readme.yml"
+    paths-ignore:
+      - "README.md"
+      - "**/images/**"
   workflow_dispatch:
 
 permissions:
