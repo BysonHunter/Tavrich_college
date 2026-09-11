@@ -281,9 +281,9 @@ void loop() {
 5. Запишите объём кода во Flash и статических данных в RAM.
 6. Рассчитайте долю использования памяти:
 
-\[
-K = \frac{V_{\text{used}}}{V_{\text{available}}}\cdot 100\%.
-\]
+$$
+K = \frac{V_{\mathrm{used}}}{V_{\mathrm{available}}} \cdot 100\%
+$$
 
 ### Этап 6. Загрузка программы
 
