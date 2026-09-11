@@ -282,7 +282,7 @@ void loop() {
 6. Рассчитайте долю использования памяти:
 
 \[
-K = \frac{V_{used}}{V_{available}}\cdot100\%.
+K = \frac{V_{\text{used}}}{V_{\text{available}}}\cdot 100\%.
 \]
 
 ### Этап 6. Загрузка программы
