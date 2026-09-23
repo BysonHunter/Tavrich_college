@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="720" viewBox="0 0 1500 720">
+<defs><marker id="a" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6 0 12z" fill="#36536d"/></marker><style>text{font-family:Arial,sans-serif;fill:#18344d}.h{font-size:38px;font-weight:700}.t{font-size:27px;font-weight:600}.s{font-size:22px}.w{fill:none;stroke:#2780c2;stroke-width:8;stroke-linejoin:round;stroke-linecap:round}.axis{stroke:#36536d;stroke-width:4;marker-end:url(#a)}</style></defs>
+<rect width="1500" height="720" rx="28" fill="#f5f9fc"/>
+<text x="750" y="58" class="h" text-anchor="middle">Управление положением сервопривода длительностью импульса</text>
+<text x="190" y="145" class="t">≈ 0°</text><path d="M300 165h90v-75h75v75h300v-75h75v75h300" class="w"/><text x="425" y="112" class="t">≈ 1,0 мс</text>
+<text x="190" y="320" class="t">≈ 90°</text><path d="M300 340h90v-75h115v75h260v-75h115v75h160" class="w"/><text x="445" y="287" class="t">≈ 1,5 мс</text>
+<text x="190" y="495" class="t">≈ 180°</text><path d="M300 515h90v-75h155v75h220v-75h155v75h120" class="w"/><text x="465" y="462" class="t">≈ 2,0 мс</text>
+<line x1="300" y1="620" x2="1250" y2="620" class="axis"/><text x="775" y="670" class="t" text-anchor="middle">Период повторения обычно около 20 мс</text>
+<rect x="1080" y="125" width="310" height="390" rx="22" fill="#fff" stroke="#b4c5d2" stroke-width="3"/>
+<circle cx="1235" cy="240" r="90" fill="#eaf2f8" stroke="#2780c2" stroke-width="5"/><line x1="1235" y1="240" x2="1235" y2="165" stroke="#e04d4d" stroke-width="10" stroke-linecap="round"/>
+<text x="1235" y="380" class="s" text-anchor="middle">Ширина импульса задаёт</text><text x="1235" y="414" class="s" text-anchor="middle">требуемое положение</text><text x="1235" y="470" class="s" text-anchor="middle">Точные пределы зависят</text><text x="1235" y="502" class="s" text-anchor="middle">от модели сервопривода</text>
+</svg>

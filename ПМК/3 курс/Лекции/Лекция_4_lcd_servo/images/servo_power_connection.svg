@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="760" viewBox="0 0 1500 760">
+<defs><marker id="a" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6 0 12z" fill="#263f56"/></marker><style>text{font-family:Arial,sans-serif;fill:#18344d}.h{font-size:39px;font-weight:700}.t{font-size:27px;font-weight:650}.s{font-size:22px}.line{fill:none;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}</style></defs>
+<rect width="1500" height="760" rx="28" fill="#f5f9fc"/>
+<text x="750" y="62" class="h" text-anchor="middle">Правильное питание сервопривода от внешнего источника</text>
+<rect x="80" y="170" width="350" height="390" rx="28" fill="#dceeff" stroke="#2b7eba" stroke-width="4"/><text x="255" y="235" class="h" text-anchor="middle">Arduino</text><text x="255" y="330" class="t" text-anchor="middle">D9 — сигнал</text><text x="255" y="430" class="t" text-anchor="middle">GND</text>
+<rect x="575" y="170" width="350" height="390" rx="28" fill="#e7f4df" stroke="#4c9351" stroke-width="4"/><text x="750" y="235" class="h" text-anchor="middle">Источник 5 В</text><text x="750" y="330" class="t" text-anchor="middle">+5 В</text><text x="750" y="430" class="t" text-anchor="middle">GND</text><text x="750" y="515" class="s" text-anchor="middle">Ток выбирают с запасом</text>
+<rect x="1070" y="170" width="350" height="390" rx="28" fill="#f1e7ff" stroke="#7556b3" stroke-width="4"/><text x="1245" y="235" class="h" text-anchor="middle">Сервопривод</text><text x="1245" y="320" class="t" text-anchor="middle">сигнал</text><text x="1245" y="395" class="t" text-anchor="middle">V+</text><text x="1245" y="470" class="t" text-anchor="middle">GND</text>
+<path d="M430 330H500V125H1000V320H1070" class="line" stroke="#e2a126"/><text x="750" y="112" class="s" text-anchor="middle">управляющий сигнал D9 → вход сервопривода</text>
+<path d="M925 395H1070" class="line" stroke="#d94848"/><text x="997" y="378" class="s" text-anchor="middle">+5 В</text>
+<path d="M430 430V535H1070V470" class="line" stroke="#263f56"/><path d="M750 430V535" class="line" stroke="#263f56"/><circle cx="750" cy="535" r="11" fill="#263f56"/><text x="750" y="575" class="s" text-anchor="middle">общая земля Arduino, источника и сервопривода</text>
+<rect x="615" y="590" width="270" height="90" rx="18" fill="#fff2d5" stroke="#dd991e" stroke-width="3"/><text x="750" y="625" class="t" text-anchor="middle">470–1000 мкФ</text><text x="750" y="658" class="s" text-anchor="middle">рядом с сервоприводом</text>
+<path d="M655 590V395H925" fill="none" stroke="#d94848" stroke-width="5"/><path d="M845 590V535" fill="none" stroke="#263f56" stroke-width="5"/>
+<text x="750" y="728" class="t" text-anchor="middle">Не питать нагруженный сервопривод от вывода 5 V платы Arduino</text>
+</svg>
