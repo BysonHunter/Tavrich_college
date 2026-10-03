@@ -40,7 +40,7 @@ jobs:
           set -euo pipefail
           WIKI_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
 
-          if ! git clone "${WIKI_URL}" wiki; then
+          if ! git clone "${WIKI_URL}" "${RUNNER_TEMP}/tavrich-wiki"; then
             echo "::error::GitHub Wiki is not initialized."
             echo "::error::Enable Wikis and create the first Home page once."
             exit 1
@@ -52,14 +52,14 @@ jobs:
           set -euo pipefail
           python .github/scripts/build_wiki.py \
             --source "${GITHUB_WORKSPACE}" \
-            --wiki "${GITHUB_WORKSPACE}/wiki" \
+            --wiki "${RUNNER_TEMP}/tavrich-wiki" \
             --owner "${GITHUB_REPOSITORY_OWNER}" \
             --repo "${GITHUB_REPOSITORY#*/}" \
             --branch "${GITHUB_REF_NAME}"
 
       - name: Commit and publish Wiki
         shell: bash
-        working-directory: wiki
+        working-directory: ${{ runner.temp }}/tavrich-wiki
         run: |
           set -euo pipefail
 
