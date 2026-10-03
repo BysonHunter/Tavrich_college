@@ -1,179 +1,126 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+"""Build the educational landing page from the current material catalog."""
 from __future__ import annotations
 
 import argparse
+from html import escape
 from pathlib import Path
+from repo_catalog import discover, children, top_level_dirs, top_level_files, md_escape, relative_repo_link
 
-from repo_catalog import (
-    Item, children, discover, md_escape, relative_repo_link,
-    top_level_dirs, top_level_files,
-)
+SUBJECTS = {
+    'МПС': ('Микропроцессорные системы', 'Архитектура микропроцессоров, представление данных, адресация, ассемблер, шины и проектирование микропроцессорных устройств.'),
+    'ПМК': ('Программирование микроконтроллеров', 'Архитектура и программирование микроконтроллеров, Arduino, ARM Cortex-M, периферия, подключение устройств и отладка управляющих программ.'),
+}
+DOCUMENTS = {
+    'РПД': ('Рабочие программы', 'Содержание дисциплин, тематическое планирование и требования к результатам обучения.'),
+    'ФОС': ('Контроль знаний', 'Материалы для проверки знаний и входного контроля.'),
+    'АккМон': ('Аккредитация и оценочные материалы', 'Вопросы к аккредитации и фонды оценочных средств по МПС и ПМК.'),
+}
 
-def item_link(item: Item) -> str:
-    return f"[{md_escape(item.title)}]({relative_repo_link(item.rel)})"
+def link(title, rel):
+    return f'[{md_escape(title)}]({relative_repo_link(rel)})'
 
-def build_tree(items: list[Item]) -> str:
-    lines = ["Tavrich_college/", "│", "├── README.md"]
-    roots = top_level_dirs(items)
-    root_files = top_level_files(items)
+def material_label(item):
+    # Generic headings in accreditation files otherwise produce identical labels.
+    title = item.title
+    if title.casefold() == 'вопросы к аккредитации':
+        title += ' — ' + ('МПС' if 'Микропроцессорные' in item.rel else 'ПМК')
+    return title
 
-    for i, root in enumerate(roots):
-        last = i == len(roots) - 1 and not root_files
-        marker = "└── " if last else "├── "
-        prefix = "    " if last else "│   "
-        lines.append(f"{marker}{Path(root.rel).name}/")
-        add_tree_children(items, root.rel, lines, prefix)
-
-    for i, item in enumerate(root_files):
-        marker = "└── " if i == len(root_files) - 1 else "├── "
-        lines.append(f"{marker}{Path(item.rel).name}")
-
-    return "\n".join(lines)
-
-def add_tree_children(items, parent_rel, lines, prefix):
-    kids = children(items, parent_rel)
-    for i, item in enumerate(kids):
-        last = i == len(kids) - 1
-        marker = "└── " if last else "├── "
-        next_prefix = prefix + ("    " if last else "│   ")
-        name = Path(item.rel).name
-        if item.kind == "dir":
-            lines.append(f"{prefix}{marker}{name}/")
-            add_tree_children(items, item.rel, lines, next_prefix)
+def listing(items, parent):
+    """Flatten folders into compact material lists without a directory tree."""
+    lines = []
+    for item in children(items, parent):
+        if item.kind == 'dir':
+            lines.extend(listing(items, item.rel))
         else:
-            lines.append(f"{prefix}{marker}{name}")
-
-def render_dir(items: list[Item], directory: Item, level: int = 2) -> list[str]:
-    level = min(level, 6)
-    lines = [
-        f"{'#' * level} {directory.title}", "",
-        f"Папка: [{directory.rel}]({relative_repo_link(directory.rel + '/')})", "",
-    ]
-    kids = children(items, directory.rel)
-    files = [x for x in kids if x.kind != "dir"]
-    dirs = [x for x in kids if x.kind == "dir"]
-
-    for item in files:
-        lines.append(f"- {item_link(item)}")
-    if files:
-        lines.append("")
-
-    for subdir in dirs:
-        lines.extend(render_dir(items, subdir, level + 1))
-
-    if not kids:
-        lines += ["_Нет опубликованных материалов._", ""]
+            lines.append('- ' + link(material_label(item), item.rel))
     return lines
+
+def details(title, lines):
+    return ['<details>', f'<summary><strong>{escape(title)}</strong></summary>', '', *lines, '', '</details>', '']
 
 def build(repo: Path) -> str:
     items = discover(repo)
-    roots = top_level_dirs(items)
-    root_files = top_level_files(items)
-
-    file_count = len([x for x in items if x.kind != "dir"])
-    dir_count = len([x for x in items if x.kind == "dir"])
-
+    roots = {Path(x.rel).name: x for x in top_level_dirs(items)}
     lines = [
-        "# Tavrich College — учебно-методические материалы", "",
-        "Репозиторий содержит учебно-методические материалы Таврического колледжа "
-        "для специальности **09.02.01 «Компьютерные системы и комплексы»**.", "",
-        "> `README.md` формируется автоматически по фактической структуре репозитория. "
-        "Новые каталоги и материалы появляются после `git push`, удалённые — исчезают.", "",
-        "> Технические каталоги (`.git`, `.github`, `images`, `.vscode`, `.idea`, "
-        "`__pycache__`, виртуальные окружения и `node_modules`) в учебную навигацию "
-        "не включаются.", "",
-        "---", "", "## Содержание", "",
-        "1. [Структура репозитория](#section-1)",
+        '<!-- Generated by .github/scripts/build_readme.py. Edit the generator to change the layout. -->',
+        '# 🎓 Таврический колледж', '',
+        '**Учебно-методические материалы по микропроцессорным системам и программированию микроконтроллеров**', '',
+        'Специальность **09.02.01 «Компьютерные системы и комплексы»** · **3 и 4 курс**', '',
+        'Лекции, практические задания, примеры выполнения и материалы для контроля знаний. '
+        'Репозиторий помогает изучать устройство микропроцессорных систем, разрабатывать программы для микроконтроллеров и готовиться к аттестации.', '',
+        '[Учебные материалы](#учебные-материалы) · [Документы и аттестация](#документы-и-аттестация) · [Как пользоваться](#как-пользоваться)', '',
+        '---', '', '<a id="учебные-материалы"></a>', '## 📚 Учебные материалы', '',
+        'Выберите дисциплину и курс. Ссылки в таблице ведут к папкам с материалами; ниже можно раскрыть список и открыть конкретную лекцию или работу.', '',
+        '| Дисциплина | Курс | Лекции | Практические работы |',
+        '| :--- | :---: | :---: | :---: |',
     ]
-
-    section = 2
-    for root in roots:
-        lines.append(f"{section}. [{root.title}](#section-{section})")
-        section += 1
-
-    if root_files:
-        lines.append(f"{section}. [Файлы в корне](#section-{section})")
-        section += 1
-
-    lines.append(f"{section}. [Как работает автоматизация](#section-{section})")
-
+    for key, (title, _) in SUBJECTS.items():
+        if key not in roots: continue
+        for course in children(items, roots[key].rel):
+            if course.kind != 'dir': continue
+            sections = {Path(x.rel).name: x for x in children(items, course.rel) if x.kind == 'dir'}
+            cells = [link('Открыть', sections[name].rel) if name in sections else '—'
+                     for name in ('Лекции', 'Практические задания')]
+            lines.append(f'| {title} | {md_escape(Path(course.rel).name)} | {cells[0]} | {cells[1]} |')
+    lines.append('')
+    for key, (title, description) in SUBJECTS.items():
+        if key not in roots: continue
+        lines += [f'### {title}', '', description, '']
+        for course in children(items, roots[key].rel):
+            if course.kind != 'dir': continue
+            content = []
+            for section in children(items, course.rel):
+                if section.kind == 'dir':
+                    content += [f'**{md_escape(Path(section.rel).name)}**', '', *listing(items, section.rel), '']
+                else:
+                    content += ['- ' + link(material_label(section), section.rel)]
+            lines += details(Path(course.rel).name + ' — список материалов', content or ['_Материалы пока не опубликованы._'])
+    lines += ['---', '', '<a id="документы-и-аттестация"></a>', '## 📋 Документы и аттестация', '',
+              '| Раздел | Что внутри |', '| :--- | :--- |']
+    other_roots = [x for name, x in roots.items() if name not in SUBJECTS]
+    for root in other_roots:
+        name = Path(root.rel).name
+        title, description = DOCUMENTS.get(name, ('Демонстрационный экзамен', 'Образец задания, КИМ и приложения.') if name.startswith('Демоэкзамен') else (root.title, 'Дополнительные материалы репозитория.'))
+        lines.append(f'| {link(title, root.rel)} | {description} |')
+    lines.append('')
+    for root in other_roots:
+        name = Path(root.rel).name
+        title = DOCUMENTS.get(name, (root.title, ''))[0]
+        lines += details(title + ' — список документов', listing(items, root.rel) or ['_Документы пока не опубликованы._'])
+    files = top_level_files(items)
+    if files:
+        lines += details('Дополнительные файлы', ['- ' + link(material_label(x), x.rel) for x in files])
     lines += [
-        "", "---", "", '<a id="section-1"></a>',
-        "# 1. Структура репозитория", "",
-        "```text", build_tree(items), "```", "",
-        f"Автоматически обнаружено каталогов: **{dir_count}**; "
-        f"файлов материалов: **{file_count}**.", "",
-        "[↑ К содержанию](#содержание)",
+        '---', '', '<a id="как-пользоваться"></a>', '## 🧭 Как пользоваться', '',
+        '1. Выберите свою дисциплину и курс в таблице выше.',
+        '2. Откройте нужную лекцию или практическую работу.',
+        '3. Перед выполнением работы прочитайте требования к оборудованию, заданию и отчёту. Если предусмотрены варианты, используйте правило выбора, указанное в самой работе.',
+        '4. Для подготовки к контролю знаний и аттестации перейдите в раздел «Документы и аттестация».', '',
+        'Материалы в формате **Markdown (.md)** можно читать прямо на GitHub вместе с иллюстрациями и примерами кода. **PDF** можно открыть для просмотра или скачать.', '',
+        '<details>', '<summary>Для преподавателя: обновление навигации</summary>', '',
+        'Списки материалов формируются автоматически после отправки изменений в ветку `main`. '
+        'Генератор сохраняет оформление страницы и обновляет ссылки по фактическому содержимому репозитория. '
+        'Новые разделы вне МПС и ПМК появляются в блоке документов.', '',
+        'Для изменения описания или оформления отредактируйте `.github/scripts/build_readme.py`. '
+        'Ручные изменения в корневом `README.md` будут заменены при следующей сборке.', '',
+        '[Дополнительная навигация в Wiki](https://github.com/BysonHunter/Tavrich_college/wiki)', '',
+        '</details>', '', '---', '',
+        '**Таврический колледж · 09.02.01 «Компьютерные системы и комплексы»**', '',
     ]
+    return '\n'.join(lines)
 
-    section = 2
-    for root in roots:
-        lines += [
-            "", "---", "", f'<a id="section-{section}"></a>',
-            f"# {section}. {root.title}", "",
-            f"Папка: [{root.rel}]({relative_repo_link(root.rel + '/')})", "",
-        ]
-        direct_files = [x for x in children(items, root.rel) if x.kind != "dir"]
-        for item in direct_files:
-            lines.append(f"- {item_link(item)}")
-        if direct_files:
-            lines.append("")
-
-        for subdir in [x for x in children(items, root.rel) if x.kind == "dir"]:
-            lines.extend(render_dir(items, subdir, 2))
-
-        lines += ["[↑ К содержанию](#содержание)"]
-        section += 1
-
-    if root_files:
-        lines += [
-            "", "---", "", f'<a id="section-{section}"></a>',
-            f"# {section}. Файлы в корне", "",
-        ]
-        for item in root_files:
-            lines.append(f"- {item_link(item)}")
-        lines += ["", "[↑ К содержанию](#содержание)"]
-        section += 1
-
-    lines += [
-        "", "---", "", f'<a id="section-{section}"></a>',
-        f"# {section}. Как работает автоматизация", "",
-        "После изменения структуры или материалов достаточно обычного `git push`.", "",
-        "```text",
-        "изменение репозитория",
-        "        ↓",
-        "     git push",
-        "        ↓",
-        "GitHub Actions",
-        "   ├── Update README",
-        "   └── Update GitHub Wiki",
-        "```", "",
-        "Пустые папки Git не хранит. Если нужен пустой каталог, добавьте в него "
-        "`.gitkeep`; сам `.gitkeep` в навигации показываться не будет.", "",
-        "[GitHub Wiki](../../wiki)", "",
-        "---", "",
-        "**Специальность:** 09.02.01 «Компьютерные системы и комплексы»  ",
-        "**Учебные материалы Таврического колледжа**", "",
-    ]
-    return "\n".join(lines)
-
-def main() -> int:
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--repo", default=".")
-    parser.add_argument("--output", default="README.md")
+    parser.add_argument('--repo', default='.')
+    parser.add_argument('--output', default='README.md')
     args = parser.parse_args()
-
     repo = Path(args.repo).resolve()
     output = repo / args.output
-    output.write_text(build(repo), encoding="utf-8")
-
-    items = discover(repo)
-    print(f"README создан: {output}")
-    print(f"Каталогов: {len([x for x in items if x.kind == 'dir'])}")
-    print(f"Файлов: {len([x for x in items if x.kind != 'dir'])}")
+    output.write_text(build(repo), encoding='utf-8')
+    print(f'README создан: {output}')
     return 0
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())
