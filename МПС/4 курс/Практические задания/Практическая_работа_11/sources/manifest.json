@@ -1,0 +1,315 @@
+{
+  "source_file": "C:\\WorkDOCS\\КОЛЛЕДЖ\\02_Практика\\Проведение практики\\2024-2025\\Учебная\\3КСК\\Учебная\\ПМ02\\2025\\Задание УП.docx",
+  "source_copy": "Задание_УП_2025.docx",
+  "source_sha256": "81f5ea74906dcd611aaa226ecde06a8810783f5d203e979daf5e44770bafdce2",
+  "source_table": 2,
+  "excluded_original_variants": {
+    "2": "Плохо читаемые подписи в исходном изображении",
+    "7": "Плохо читаемые подписи в исходном изображении",
+    "13": "Плохо читаемые подписи в исходном изображении",
+    "29": "Рисунок без рамки и отметки EasyEDA",
+    "30": "Рисунок без рамки и отметки EasyEDA"
+  },
+  "variants": [
+    {
+      "variant": 1,
+      "original_variant": 1,
+      "title": "Регулятор яркости лампы на таймере 555",
+      "docx_entry": "word/media/image1.png",
+      "image": "../images/easyeda_v01.png",
+      "sha256": "d8f4ca2982a8e82f71fbf2ee409a26f8b82d77f7ea9d17f8a38b6a2224a38718",
+      "size": [
+        1162,
+        796
+      ]
+    },
+    {
+      "variant": 2,
+      "original_variant": 3,
+      "title": "Усилитель звукового сигнала",
+      "docx_entry": "word/media/image3.png",
+      "image": "../images/easyeda_v02.png",
+      "sha256": "c5566369783ead6e59e28071e36e4c7e83dc17ca60fdaaa9dc068376a221ca5c",
+      "size": [
+        1171,
+        828
+      ]
+    },
+    {
+      "variant": 3,
+      "original_variant": 4,
+      "title": "Узел питания с зарядным устройством",
+      "docx_entry": "word/media/image4.png",
+      "image": "../images/easyeda_v03.png",
+      "sha256": "df83d24f042bb82d2870f9e6c742a4b745f913e7e7b55c405cc363f6b35112d5",
+      "size": [
+        1169,
+        828
+      ]
+    },
+    {
+      "variant": 4,
+      "original_variant": 5,
+      "title": "Многоканальное устройство управления светодиодами",
+      "docx_entry": "word/media/image5.png",
+      "image": "../images/easyeda_v04.png",
+      "sha256": "66facdcd321a61793275b3d3495abcfe251835b015751e0a3fad1695283569f7",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 5,
+      "original_variant": 6,
+      "title": "Программатор AVR на Arduino Nano",
+      "docx_entry": "word/media/image6.png",
+      "image": "../images/easyeda_v05.png",
+      "sha256": "b48fa449691c3b757ebdcad97f10388b69d5c8ea4fa630d100e0fd80fbcf7b4d",
+      "size": [
+        706,
+        404
+      ]
+    },
+    {
+      "variant": 6,
+      "original_variant": 8,
+      "title": "Микроконтроллерный узел с разъёмами",
+      "docx_entry": "word/media/image8.png",
+      "image": "../images/easyeda_v06.png",
+      "sha256": "98b6926ccb83c08c2b9b54b2c82cc5d6d427c22bade782b5c6a2d168aaddb5df",
+      "size": [
+        1169,
+        828
+      ]
+    },
+    {
+      "variant": 7,
+      "original_variant": 9,
+      "title": "Микроконтроллерный узел с интерфейсами",
+      "docx_entry": "word/media/image9.png",
+      "image": "../images/easyeda_v07.png",
+      "sha256": "a88d296a17eb94a742b8ac1d28a9037a92c16ec75aaa01663f3d0c7ba2c92efd",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 8,
+      "original_variant": 10,
+      "title": "Устройство управления на микроконтроллере",
+      "docx_entry": "word/media/image10.png",
+      "image": "../images/easyeda_v08.png",
+      "sha256": "607a9f00067bfe18fbd5ea9fa1ca77746e90fbf17ece431ccaadfc398292d81e",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 9,
+      "original_variant": 11,
+      "title": "Микроконтроллерный узел с дисплеем",
+      "docx_entry": "word/media/image11.png",
+      "image": "../images/easyeda_v09.png",
+      "sha256": "bf675f84e3d2f0c782f15c9ec15fcd6d5992197288da4c2b163c3d1112d1bdb7",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 10,
+      "original_variant": 12,
+      "title": "Узел управления с датчиком",
+      "docx_entry": "word/media/image12.png",
+      "image": "../images/easyeda_v10.png",
+      "sha256": "2c55b952dc1a6137dd2865822501d8a0982c6dbb42969502adf191c86efb4248",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 11,
+      "original_variant": 14,
+      "title": "Светодиодные часы на Arduino Nano",
+      "docx_entry": "word/media/image14.png",
+      "image": "../images/easyeda_v11.png",
+      "sha256": "53d6f6d510a84cea100190571971310348a51dc621969175fa4ba11fa063f2b2",
+      "size": [
+        1169,
+        601
+      ]
+    },
+    {
+      "variant": 12,
+      "original_variant": 15,
+      "title": "Плата расширения Arduino для датчика",
+      "docx_entry": "word/media/image15.png",
+      "image": "../images/easyeda_v12.png",
+      "sha256": "f766d4194a2257b1c91c6377907bc7fb6a43a1f1ee6db125ea60fbf3154c1430",
+      "size": [
+        756,
+        555
+      ]
+    },
+    {
+      "variant": 13,
+      "original_variant": 16,
+      "title": "Радиоустройство на ESP32",
+      "docx_entry": "word/media/image16.png",
+      "image": "../images/easyeda_v13.png",
+      "sha256": "36e7e6697d7c604e3911c32b419af0dbb17f7129672290953b7a85acb25249e9",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 14,
+      "original_variant": 17,
+      "title": "Усилитель звуковой частоты",
+      "docx_entry": "word/media/image17.png",
+      "image": "../images/easyeda_v14.png",
+      "sha256": "f8407e28a3a8bb829aa38892a38c6d79744a52ab46ec78a512212e3b49fa7a8d",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 15,
+      "original_variant": 18,
+      "title": "Управляющий узел с входными цепями",
+      "docx_entry": "word/media/image18.png",
+      "image": "../images/easyeda_v15.png",
+      "sha256": "136ff7a8e4cc69d275069901bf252569b43af26b8f88c19453a336fdfe7e7815",
+      "size": [
+        1169,
+        828
+      ]
+    },
+    {
+      "variant": 16,
+      "original_variant": 19,
+      "title": "Микроконтроллерный интерфейсный узел",
+      "docx_entry": "word/media/image19.png",
+      "image": "../images/easyeda_v16.png",
+      "sha256": "0c64eabe63b94cb7a8f1aeac6c5b08b61b4daa739d46c7527bfa3fbed6b900e0",
+      "size": [
+        1181,
+        833
+      ]
+    },
+    {
+      "variant": 17,
+      "original_variant": 20,
+      "title": "Интерфейсный узел с несколькими микросхемами",
+      "docx_entry": "word/media/image20.png",
+      "image": "../images/easyeda_v17.png",
+      "sha256": "0169fa3f3c767653eb8a579ddfd2d7012dce2552e95a0e3464f5f45fd0f254d0",
+      "size": [
+        1171,
+        827
+      ]
+    },
+    {
+      "variant": 18,
+      "original_variant": 21,
+      "title": "Узел заряда и преобразования питания",
+      "docx_entry": "word/media/image21.png",
+      "image": "../images/easyeda_v18.png",
+      "sha256": "0e58612d131531af221679c1f5ba97c0b7898ddab34bedc59d38e86db1964719",
+      "size": [
+        1169,
+        828
+      ]
+    },
+    {
+      "variant": 19,
+      "original_variant": 22,
+      "title": "Микроконтроллерный регулятор с оптосвязью",
+      "docx_entry": "word/media/image22.png",
+      "image": "../images/easyeda_v19.png",
+      "sha256": "78ecede7b02628a27e7f27926d406f4258bddfc2621f32178d4407c2d8175026",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 20,
+      "original_variant": 23,
+      "title": "Микроконтроллерная плата с разъёмами",
+      "docx_entry": "word/media/image23.png",
+      "image": "../images/easyeda_v20.png",
+      "sha256": "afc04e2eb235d6a2cd5d48622f04dbc2443b8baa8f30adb9ada52caad9a7b80e",
+      "size": [
+        1169,
+        828
+      ]
+    },
+    {
+      "variant": 21,
+      "original_variant": 24,
+      "title": "Контроллер с выходными каналами",
+      "docx_entry": "word/media/image24.png",
+      "image": "../images/easyeda_v21.png",
+      "sha256": "f2d284ec2cf6dd733f11cee48bf80d59df3db1235254187c2b3a86fff58692ff",
+      "size": [
+        1169,
+        829
+      ]
+    },
+    {
+      "variant": 22,
+      "original_variant": 25,
+      "title": "Микроконтроллерный узел обмена данными",
+      "docx_entry": "word/media/image25.png",
+      "image": "../images/easyeda_v22.png",
+      "sha256": "01fbe160504164f4b0b56b9f1c50f0098aa0c8ae545a7f556e26df79a848243c",
+      "size": [
+        1169,
+        827
+      ]
+    },
+    {
+      "variant": 23,
+      "original_variant": 26,
+      "title": "Светодиодный автомат на 555 и CD4017",
+      "docx_entry": "word/media/image26.png",
+      "image": "../images/easyeda_v23.png",
+      "sha256": "237c64f192f691fd8c3633e6d571a0ea397942eb1949011316a943b247895cf9",
+      "size": [
+        1012,
+        506
+      ]
+    },
+    {
+      "variant": 24,
+      "original_variant": 27,
+      "title": "Устройство с матрицей светодиодов 6 × 6",
+      "docx_entry": "word/media/image27.png",
+      "image": "../images/easyeda_v24.png",
+      "sha256": "86ccd49ee054bef2d2feeaafdfb82b7c9d169b319682ae92eec86fb7dc531935",
+      "size": [
+        1500,
+        1114
+      ]
+    },
+    {
+      "variant": 25,
+      "original_variant": 28,
+      "title": "Микроконтроллерный узел с зарядным устройством",
+      "docx_entry": "word/media/image28.png",
+      "image": "../images/easyeda_v25.png",
+      "sha256": "b98981bbec88aab824a3f370fd8e689b6d18d0d4af25cd6fea4d2d69daef6d4c",
+      "size": [
+        1169,
+        827
+      ]
+    }
+  ]
+}
