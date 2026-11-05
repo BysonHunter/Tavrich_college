@@ -1,0 +1,1 @@
+Educational geometry export, mm, board 150x100. GTL/GBL copper; GTS/GBS mask; GTO reference silk; GKO outline; PTH/NPTH drill. Not exported from EasyEDA; component mechanical sign-off and a final CAD fabrication export are required before ordering. No physical validation performed.

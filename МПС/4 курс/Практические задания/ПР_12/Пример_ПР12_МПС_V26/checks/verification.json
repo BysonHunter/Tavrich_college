@@ -1,0 +1,52 @@
+{
+  "clearance_min_mm": 0.22621666723966607,
+  "violations": [],
+  "connectivity": {
+    "BTN1": {
+      "pads": 4,
+      "copper_components": 1
+    },
+    "BTN2": {
+      "pads": 4,
+      "copper_components": 1
+    },
+    "EXT5": {
+      "pads": 6,
+      "copper_components": 1
+    },
+    "GND": {
+      "pads": 13,
+      "copper_components": 1
+    },
+    "LOGIC5": {
+      "pads": 11,
+      "copper_components": 1
+    },
+    "POT1": {
+      "pads": 3,
+      "copper_components": 1
+    },
+    "POT2": {
+      "pads": 2,
+      "copper_components": 1
+    },
+    "SCL": {
+      "pads": 2,
+      "copper_components": 1
+    },
+    "SDA": {
+      "pads": 2,
+      "copper_components": 1
+    },
+    "SERVO": {
+      "pads": 3,
+      "copper_components": 1
+    }
+  },
+  "tracks": 50,
+  "vias": 4,
+  "pads": 70,
+  "easyeda_drc": "0 violations observed in EasyEDA Standard 6.5.61 after import",
+  "manual_history": "not claimed",
+  "native_import": "PCB and schematic successfully opened in EasyEDA Standard 6.5.61; schematic: 19 components, 10 working nets"
+}
